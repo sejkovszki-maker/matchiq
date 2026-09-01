@@ -1,192 +1,64 @@
 'use client';
 
-import {
-  Activity,
-  BarChart3,
-  Brain,
-  ChevronRight,
-  Flame,
-  Goal,
-  Heart,
-  Home,
-  Search,
-  Settings,
-  ShieldCheck,
-  Star,
-  Trophy,
-  X,
-} from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { calculatePrediction, confidenceScore, percent, type Prediction } from '@/lib/prediction';
+import { useEffect, useMemo, useState } from 'react';
+import { Activity, AlertTriangle, BarChart3, Brain, ChevronRight, Database, Flame, Goal, Heart, Home, Search, Settings, ShieldCheck, Star, Trophy, X } from 'lucide-react';
+import { loadDailyData } from '@/lib/data';
+import { analyzeMatch, analysisRank } from '@/lib/prediction/model';
+import { percent } from '@/lib/prediction';
+import { saveSnapshot } from '@/lib/data/snapshots';
+import type { DataHealth } from '@/lib/data/providers/types';
+import type { MarketKey, MatchAnalysis, MatchStatus } from '@/types/domain';
 
-type Match = {
-  id: number;
-  home: string;
-  away: string;
-  time: string;
-  league: string;
-  tag: 'Tippmix' | 'Top liga' | 'Magyar';
-  xg: [number, number];
-  form: [string, string];
-  pick: string;
-  dataQuality: number;
-};
+const nav=[[Home,'Mai meccsek'],[Flame,'Top jelzések'],[Trophy,'Ligák'],[Search,'Meccskereső'],[Brain,'AI modell'],[BarChart3,'Teljesítmény'],[Heart,'Kedvencek'],[Settings,'Beállítások']] as const;
+const labels:Record<MarketKey,string>={home:'Hazai',draw:'Döntetlen',away:'Vendég',over15:'Over 1.5',over25:'Over 2.5',over35:'Over 3.5',bttsYes:'BTTS Igen'};
+const statusLabels:Record<MatchStatus,string>={scheduled:'Tervezett',live:'Élő',finished:'Véget ért',postponed:'Elhalasztva',cancelled:'Törölve'};
+const time=(iso:string)=>new Intl.DateTimeFormat('hu-HU',{hour:'2-digit',minute:'2-digit'}).format(new Date(iso));
+const pct=(v:number|undefined)=>v===undefined?'—':`${percent(v)}%`;
+const edge=(v:number|undefined)=>v===undefined?'—':`${v>=0?'+':''}${(v*100).toFixed(1)}%`;
 
-type EnrichedMatch = Match & { prediction: Prediction; confidence: number };
+function Confidence({value}:{value:number}){return <span className={`confidence ${value>=85?'hot':''}`}>{value>=85?<Flame size={14}/>:<ShieldCheck size={14}/>} {value}</span>}
 
-const matches: Match[] = [
-  { id: 1, home: 'Arsenal', away: 'Fulham', time: '20:45', league: 'Premier League', tag: 'Tippmix', xg: [2.04, 0.81], form: ['GY · GY · D · GY · GY', 'V · D · GY · V · D'], pick: 'Hazai győzelem', dataQuality: 0.92 },
-  { id: 2, home: 'Inter', away: 'Torino', time: '21:00', league: 'Serie A', tag: 'Tippmix', xg: [2.19, 0.69], form: ['GY · GY · GY · D · GY', 'D · V · D · GY · V'], pick: 'Over 1.5', dataQuality: 0.95 },
-  { id: 3, home: 'Dortmund', away: 'Mainz', time: '18:30', league: 'Bundesliga', tag: 'Top liga', xg: [1.88, 1.21], form: ['GY · V · GY · GY · D', 'D · GY · V · D · GY'], pick: 'BTTS – Igen', dataQuality: 0.86 },
-  { id: 4, home: 'Ferencváros', away: 'Paks', time: '19:30', league: 'NB I', tag: 'Magyar', xg: [1.76, 1.14], form: ['GY · D · GY · GY · V', 'GY · V · D · GY · D'], pick: 'Over 2.5', dataQuality: 0.82 },
-  { id: 5, home: 'Real Sociedad', away: 'Getafe', time: '21:30', league: 'La Liga', tag: 'Top liga', xg: [1.42, 0.57], form: ['D · GY · D · V · GY', 'V · D · V · D · GY'], pick: 'BTTS – Nem', dataQuality: 0.88 },
-];
-
-const enriched: EnrichedMatch[] = matches.map((match) => {
-  const prediction = calculatePrediction(match.xg[0], match.xg[1]);
-  return { ...match, prediction, confidence: confidenceScore(prediction, match.dataQuality) };
-});
-
-const navItems = [
-  [Home, 'Mai meccsek'],
-  [Flame, 'Top jelzések'],
-  [Trophy, 'Ligák'],
-  [Search, 'Meccskereső'],
-  [Brain, 'AI modell'],
-  [BarChart3, 'Teljesítmény'],
-  [Heart, 'Kedvencek'],
-  [Settings, 'Beállítások'],
-] as const;
-
-function Confidence({ value }: { value: number }) {
-  const hot = value >= 85;
-  return (
-    <span className={`confidence ${hot ? 'hot' : ''}`}>
-      {hot ? <Flame size={14} /> : <ShieldCheck size={14} />} {value}
-    </span>
-  );
+function MatchCard({match,favorite,onFavorite,onOpen}:{match:MatchAnalysis;favorite:boolean;onFavorite:()=>void;onOpen:()=>void}){
+  const main=[...match.model.markets.filter(m=>['home','draw','away'].includes(m.market))].sort((a,b)=>b.modelProbability-a.modelProbability)[0];
+  return <article className="match-card">
+    <div className="match-top"><div><span className={`status-badge ${match.status}`}>{statusLabels[match.status]}</span><span className="time">{time(match.kickoff)}</span><span className="league">{match.league.name}</span></div><div className="top-actions">{match.isTippmix&&<span className="tag"><Star size={12} fill="currentColor"/>Tippmix adat</span>}<button className={`favorite ${favorite?'active':''}`} onClick={onFavorite} aria-label="Kedvenc"><Heart size={16} fill={favorite?'currentColor':'none'}/></button></div></div>
+    <div className="teams"><strong>{match.home.name}</strong><span>–</span><strong>{match.away.name}</strong></div>
+    <div className="prediction-row"><div><small>MODELL VÁRHATÓ EREDMÉNY</small><b>{match.model.predictedScore.join('–')}</b></div><div className="probabilities">{(['home','draw','away'] as MarketKey[]).map((k)=><span key={k}><i>{k==='home'?'1':k==='draw'?'X':'2'}</i><b>{pct(match.model.markets.find(m=>m.market===k)?.modelProbability)}</b></span>)}</div></div>
+    <div className="value-strip"><span><small>{labels[main.market]}</small><b>{pct(main.modelProbability)}</b></span><span><small>Odds</small><b>{main.odds?.toFixed(2)??'—'}</b></span><span><small>Piac</small><b>{pct(main.marketProbability)}</b></span><span className={main.valueEdge!==undefined&&main.valueEdge>0?'positive':''}><small>Value</small><b>{edge(main.valueEdge)}</b></span></div>
+    <div className="market-row"><Confidence value={match.model.confidence}/><span>DATA <b>{match.model.dataQuality}</b></span><span>MODEL <b>{match.model.version}</b></span></div>
+    <button className="detail-btn" onClick={onOpen}>Modell vs Piac <ChevronRight size={16}/></button>
+  </article>
 }
 
-function MatchCard({ match, onOpen, favorite, onFavorite }: { match: EnrichedMatch; onOpen: () => void; favorite: boolean; onFavorite: () => void }) {
-  const p = match.prediction;
-  const btts = percent(p.bttsYes);
-  return (
-    <article className="match-card">
-      <div className="match-top">
-        <div><span className="time">{match.time}</span><span className="league">{match.league}</span></div>
-        <div className="top-actions">
-          <span className="tag"><Star size={12} fill="currentColor" />{match.tag}</span>
-          <button className={`favorite ${favorite ? 'active' : ''}`} onClick={onFavorite} aria-label="Kedvenc"><Heart size={16} fill={favorite ? 'currentColor' : 'none'} /></button>
-        </div>
-      </div>
-      <div className="teams"><strong>{match.home}</strong><span>–</span><strong>{match.away}</strong></div>
-      <div className="prediction-row">
-        <div><small>MODELL VÁRHATÓ EREDMÉNY</small><b>{p.predictedScore[0]}–{p.predictedScore[1]}</b></div>
-        <div className="probabilities">
-          {[['1', p.homeWin], ['X', p.draw], ['2', p.awayWin]].map(([label, value]) => (
-            <span key={String(label)}><i>{label}</i><b>{percent(Number(value))}%</b></span>
-          ))}
-        </div>
-      </div>
-      <div className="market-row">
-        <span>BTTS <b>{btts >= 50 ? 'IGEN' : 'NEM'} {btts >= 50 ? btts : 100 - btts}%</b></span>
-        <span>O2.5 <b>{percent(p.over25)}%</b></span>
-        <Confidence value={match.confidence} />
-      </div>
-      <button className="detail-btn" onClick={onOpen}>Részletes elemzés <ChevronRight size={16} /></button>
-    </article>
-  );
+function Detail({match,onClose}:{match:MatchAnalysis;onClose:()=>void}){
+  const oneXtwo=match.model.markets.filter(m=>['home','draw','away'].includes(m.market));
+  const matrix=match.model.matrix.filter(c=>c.home<=4&&c.away<=4);
+  const cell=(h:number,a:number)=>matrix.find(c=>c.home===h&&c.away===a)?.probability??0;
+  return <div className="detail-overlay" role="dialog" aria-modal="true"><div className="detail-panel"><button className="close" onClick={onClose} aria-label="Bezárás"><X/></button><div className="detail-heading"><span>{match.league.name} · {time(match.kickoff)} · {statusLabels[match.status]}</span><h2>{match.home.name} <em>–</em> {match.away.name}</h2></div>
+    <div className="hero-prediction"><div><small>PREDICTION ENGINE {match.model.version}</small><strong>{match.model.predictedScore.join('–')}</strong><p>Várható gól: <b>{match.statistics.homeXg.toFixed(2)}</b> – <b>{match.statistics.awayXg.toFixed(2)} xG</b></p></div><div className="hero-scores"><Confidence value={match.model.confidence}/><span>Adatminőség <b>{match.model.dataQuality}/100</b></span></div></div>
+    <div className="detail-grid"><section className="panel wide"><h3>Modell vs Piac</h3><div className="compare-grid">{oneXtwo.map(m=><div className="compare" key={m.market}><div><b>{labels[m.market]}</b><span>Odds {m.odds?.toFixed(2)??'—'}</span></div><div className="dual-bar"><span className="model" style={{width:pct(m.modelProbability)}}/><span className="market" style={{width:pct(m.marketProbability)}}/></div><div className="compare-values"><span>Modell <b>{pct(m.modelProbability)}</b></span><span>Piac <b>{pct(m.marketProbability)}</b></span><strong className={m.valueEdge!==undefined&&m.valueEdge>0?'positive':''}>{edge(m.valueEdge)}</strong></div></div>)}</div><div className="legend"><span><i className="model"/>Modell</span><span><i className="market"/>Normalizált piac</span></div></section>
+    <section className="panel"><h3>Gólpiacok</h3><div className="market-list">{(['over15','over25','over35','bttsYes'] as MarketKey[]).map(k=>{const m=match.model.markets.find(x=>x.market===k)!;return <p key={k}>{labels[k]} <b>{pct(m.modelProbability)}</b></p>})}</div></section>
+    <section className="panel"><h3>Adatállapot</h3><div className="data-checks"><p><span>xG és forma</span><b>Elérhető</b></p><p><span>Minta</span><b>{match.statistics.sampleSize} meccs</b></p><p><span>Odds</span><b>{match.odds?'Elérhető':'Hiányzik'}</b></p><p><span>Szolgáltató</span><b>{match.odds?.provider??'—'}</b></p></div></section>
+    <section className="panel wide"><h3>Pontos eredménymátrix</h3><div className="matrix"><div/>{[0,1,2,3,4].map(a=><b key={a}>{match.away.name} {a}</b>)}{[0,1,2,3,4].flatMap(h=>[<b key={'h'+h}>{match.home.name} {h}</b>,...[0,1,2,3,4].map(a=>{const v=percent(cell(h,a));return <span className={v>=10?'peak':''} key={h+'-'+a}>{v}%</span>})])}</div></section>
+    {match.dataWarnings.length>0&&<section className="panel wide warnings"><AlertTriangle/><div><h3>Adathiány és korlátozások</h3>{match.dataWarnings.map(w=><p key={w}>{w}</p>)}</div></section>}
+    </div></div></div>
 }
 
-function Detail({ match, onClose }: { match: EnrichedMatch; onClose: () => void }) {
-  const p = match.prediction;
-  const matrix = p.matrix.filter((cell) => cell.home <= 4 && cell.away <= 4);
-  const matrixValue = (home: number, away: number) => percent(matrix.find((c) => c.home === home && c.away === away)?.probability ?? 0);
-  const topProb = Math.max(p.homeWin, p.draw, p.awayWin);
-  const dominant = topProb === p.homeWin ? `${match.home} győzelme` : topProb === p.awayWin ? `${match.away} győzelme` : 'a döntetlen';
-
-  return (
-    <div className="detail-overlay" role="dialog" aria-modal="true">
-      <div className="detail-panel">
-        <button className="close" onClick={onClose} aria-label="Bezárás"><X /></button>
-        <div className="detail-heading"><span>{match.league} · {match.time}</span><h2>{match.home} <em>–</em> {match.away}</h2></div>
-        <div className="hero-prediction">
-          <div><small>POISSON / xG EREDMÉNY-ELŐREJELZÉS</small><strong>{p.predictedScore[0]}–{p.predictedScore[1]}</strong><p>Várható gól: <b>{p.expectedHome.toFixed(2)}</b> – <b>{p.expectedAway.toFixed(2)} xG</b></p></div>
-          <Confidence value={match.confidence} />
-        </div>
-        <div className="detail-grid">
-          <section className="panel">
-            <h3>1X2 valószínűség</h3>
-            {[[`1 — ${match.home}`, p.homeWin], ['X — Döntetlen', p.draw], [`2 — ${match.away}`, p.awayWin]].map(([label, value]) => (
-              <div className="bar" key={String(label)}><span>{label}</span><div><i style={{ width: `${percent(Number(value))}%` }} /></div><b>{percent(Number(value))}%</b></div>
-            ))}
-          </section>
-          <section className="panel">
-            <h3>Gólpiacok</h3>
-            <div className="market-list"><p>Over 1.5 <b>{percent(p.over15)}%</b></p><p>Over 2.5 <b>{percent(p.over25)}%</b></p><p>Over 3.5 <b>{percent(p.over35)}%</b></p><p>BTTS – Igen <b>{percent(p.bttsYes)}%</b></p></div>
-          </section>
-          <section className="panel wide">
-            <h3>Pontos eredménymátrix</h3>
-            <div className="matrix">
-              <div />{[0,1,2,3,4].map((away) => <b key={`a-${away}`}>{match.away} {away}</b>)}
-              {[0,1,2,3,4].flatMap((home) => [
-                <b key={`h-${home}`}>{match.home} {home}</b>,
-                ...[0,1,2,3,4].map((away) => { const v = matrixValue(home, away); return <span key={`${home}-${away}`} className={v >= 10 ? 'peak' : ''}>{v}%</span>; }),
-              ])}
-            </div>
-            <p className="hint">Legvalószínűbb: {p.topScores.slice(0,3).map((s) => <b key={`${s.home}-${s.away}`}>{s.home}–{s.away} ({percent(s.probability)}%) </b>)}</p>
-          </section>
-          <section className="panel wide reason"><Brain /><div><h3>Miért ezt jósolja a modell?</h3><p>A jelenlegi xG-bemenetek alapján {dominant} a legvalószínűbb kimenet. A modell külön Poisson-eloszlással számolja a két csapat góljait, majd az eredménymátrixból vezeti le az 1X2, BTTS és gólpiaci valószínűségeket. Ez a v0.2-ben már ugyanabból a központi számításból származik, nem külön beírt értékekből.</p></div></section>
-          <section className="panel wide"><h3>Aktuális forma</h3><div className="forms"><p><b>{match.home}</b><span>{match.form[0]}</span></p><p><b>{match.away}</b><span>{match.form[1]}</span></p></div></section>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function Page() {
-  const [filter, setFilter] = useState('Összes');
-  const [selected, setSelected] = useState<EnrichedMatch | null>(null);
-  const [query, setQuery] = useState('');
-  const [favorites, setFavorites] = useState<number[]>([]);
-  const [showSearch, setShowSearch] = useState(false);
-
-  const filtered = useMemo(() => enriched.filter((m) => {
-    const filterOk = filter === 'Összes' || filter === 'Ma' || (filter === 'Tippmix' && m.tag === 'Tippmix') || (filter === 'Top liga' && m.tag === 'Top liga') || (filter === 'Magyar' && m.tag === 'Magyar') || (filter === 'BL/EL' && /Champions|Europa|BL|EL/.test(m.league));
-    const q = query.trim().toLocaleLowerCase('hu-HU');
-    const queryOk = !q || `${m.home} ${m.away} ${m.league}`.toLocaleLowerCase('hu-HU').includes(q);
-    return filterOk && queryOk;
-  }), [filter, query]);
-
-  const strongest = [...enriched].sort((a, b) => b.confidence - a.confidence).slice(0, 3);
-
-  return (
-    <main className="app-shell">
-      <aside className="sidebar">
-        <div className="brand"><div><Activity /></div><span>Match<b>IQ</b></span><small>v0.2</small></div>
-        <nav>{navItems.map(([Icon, label], index) => <button className={index === 0 ? 'active' : ''} key={label}><Icon size={19}/><span>{label}</span>{index === 1 && <i>{strongest.length}</i>}</button>)}</nav>
-        <div className="model-status"><span/><div><b>Prediction Core aktív</b><small>Poisson + xG · v0.2</small></div></div>
-      </aside>
-
-      <section className="content">
-        <header className="topbar">
-          <div className="mobile-brand"><Activity/><b>MatchIQ</b></div>
-          <div className="live"><span/> 24 élő mérkőzés</div>
-          <button className="search" onClick={() => setShowSearch((v) => !v)}><Search size={17}/> Meccs vagy csapat keresése...</button>
-          <div className="date-pill">2026. SZEPTEMBER 1. · KEDD</div>
-        </header>
-        <div className="page">
-          {showSearch && <div className="search-box"><Search size={18}/><input autoFocus placeholder="Arsenal, NB I, Serie A..." value={query} onChange={(e) => setQuery(e.target.value)} /><button onClick={() => {setQuery('');setShowSearch(false);}}><X size={17}/></button></div>}
-          <div className="title-row"><div><p className="eyebrow">NAPI MODELLKÖZPONT · V0.2</p><h1>Mai mérkőzések</h1><p>Adatvezérelt előrejelzések közös Poisson/xG számításból.</p></div><div className="accuracy"><Goal/><div><small>MODELL STÁTUSZ</small><b>Prediction Core</b></div></div></div>
-          <div className="filters">{['Összes','Tippmix','Top liga','Magyar','BL/EL','Ma','Holnap'].map((item) => <button className={filter === item ? 'active' : ''} onClick={() => setFilter(item)} key={item}>{item}</button>)}</div>
-          <section className="signals"><div className="section-heading"><div><Flame/><span><b>Mai legerősebb modelljelzések</b><small>A confidence score alapján rendezve</small></span></div><p>Nem garantált tippek</p></div><div className="signal-grid">{strongest.map((m, i) => <button onClick={() => setSelected(m)} className="signal" key={m.id}><span className="rank">0{i+1}</span><div><b>{m.home} – {m.away}</b><small>{m.league} · {m.time}</small></div><span className="pick">{m.pick}</span><strong>{Math.max(percent(m.prediction.homeWin), percent(m.prediction.draw), percent(m.prediction.awayWin))}%</strong><Confidence value={m.confidence}/><ChevronRight/></button>)}</div></section>
-          <div className="list-heading"><div><h2>Összes mérkőzés</h2><span>{filtered.length} mérkőzés</span></div><small>A csapatadatok továbbra is tesztadatok; a valószínűségek már számítottak.</small></div>
-          <div className="match-grid">{filtered.map((m) => <MatchCard key={m.id} match={m} onOpen={() => setSelected(m)} favorite={favorites.includes(m.id)} onFavorite={() => setFavorites((f) => f.includes(m.id) ? f.filter((id) => id !== m.id) : [...f, m.id])}/>)}</div>
-        </div>
-        <nav className="mobile-nav">{navItems.slice(0,5).map(([Icon,label],i) => <button className={i===0?'active':''} key={label}><Icon/><span>{label.split(' ')[0]}</span></button>)}</nav>
-      </section>
-      {selected && <Detail match={selected} onClose={() => setSelected(null)}/>} 
-    </main>
-  );
+export default function Page(){
+  const[analyses,setAnalyses]=useState<MatchAnalysis[]>([]);const[health,setHealth]=useState<DataHealth|null>(null);const[loading,setLoading]=useState(true);const[filter,setFilter]=useState('Összes');const[query,setQuery]=useState('');const[selected,setSelected]=useState<MatchAnalysis|null>(null);const[favorites,setFavorites]=useState<string[]>([]);const[showSearch,setShowSearch]=useState(false);
+  useEffect(()=>{try{setFavorites(JSON.parse(localStorage.getItem('matchiq-favorites')||'[]'))}catch{};loadDailyData('2026-09-01','mock').then(({matches,statistics,odds,health})=>{const list=matches.map(m=>analyzeMatch(m,statistics.find(s=>s.matchId===m.id)!,odds.find(o=>o.matchId===m.id))).sort((a,b)=>(Number(b.isTippmix)-Number(a.isTippmix))||analysisRank(b)-analysisRank(a));setAnalyses(list);setHealth(health);list.filter(m=>m.status==='scheduled').forEach(m=>saveSnapshot({id:`${m.id}-${m.model.version}`,matchId:m.id,createdAt:m.model.calculatedAt,modelVersion:m.model.version,statistics:m.statistics,odds:m.odds,result:m.model}));}).finally(()=>setLoading(false))},[]);
+  const toggleFavorite=(id:string)=>setFavorites(f=>{const n=f.includes(id)?f.filter(x=>x!==id):[...f,id];localStorage.setItem('matchiq-favorites',JSON.stringify(n));return n});
+  const filtered=useMemo(()=>analyses.filter(m=>{const tag=filter==='Összes'||filter==='Ma'||filter==='Tippmix'&&m.isTippmix||filter==='Magyar'&&m.league.country==='Magyarország'||filter==='Top liga'&&m.league.tier===1||filter==='Kedvencek'&&favorites.includes(m.id);const q=query.toLocaleLowerCase('hu-HU');return tag&&(!q||`${m.home.name} ${m.away.name} ${m.league.name}`.toLocaleLowerCase('hu-HU').includes(q))}),[analyses,filter,query,favorites]);
+  const strongest=[...analyses].sort((a,b)=>analysisRank(b)-analysisRank(a)).slice(0,3);
+  return <main className="app-shell"><aside className="sidebar"><div className="brand"><div><Activity/></div><span>Match<b>IQ</b></span><small>v0.3</small></div><nav>{nav.map(([Icon,label],i)=><button className={i===0?'active':''} key={label} onClick={()=>label==='Kedvencek'&&setFilter('Kedvencek')}><Icon size={19}/><span>{label}</span></button>)}</nav><div className="model-status"><span/><div><b>Data Pipeline aktív</b><small>Poisson + odds + value · 0.3.0</small></div></div></aside>
+  <section className="content"><header className="topbar"><div className="mobile-brand"><Activity/><b>MatchIQ</b></div><div className="live"><span/> {analyses.filter(m=>m.status==='live').length} élő mérkőzés</div><button className="search" onClick={()=>setShowSearch(v=>!v)}><Search size={17}/> Meccs vagy csapat keresése...</button><div className="date-pill">2026. SZEPTEMBER 1. · KEDD</div></header><div className="page">
+  {health&&<div className="data-health"><div><Database/><span><b>{health.mode==='mock'?'DEMO ADATFORRÁS':'ÉLŐ ADATFORRÁS'}</b><small>Utolsó frissítés: {new Date(health.updatedAt).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}</small></span></div><p>{health.mode==='mock'?'Az API-kulcsok bekötéséig ellenőrzött tesztadatok láthatók.':'Az adatok automatikusan frissülnek.'}</p></div>}
+  {showSearch&&<div className="search-box"><Search size={18}/><input autoFocus placeholder="Csapat vagy liga..." value={query} onChange={e=>setQuery(e.target.value)}/><button onClick={()=>{setQuery('');setShowSearch(false)}}><X size={17}/></button></div>}
+  <div className="title-row"><div><p className="eyebrow">NAPI ADAT- ÉS MODELLKÖZPONT · V0.3</p><h1>Mai mérkőzések</h1><p>Fixture → statisztika → modell → odds → value → snapshot.</p></div><div className="accuracy"><Goal/><div><small>MODELLVERZIÓ</small><b>Prediction Engine 0.3.0</b></div></div></div>
+  <div className="filters">{['Összes','Tippmix','Top liga','Magyar','Ma','Kedvencek'].map(x=><button className={filter===x?'active':''} onClick={()=>setFilter(x)} key={x}>{x}</button>)}</div>
+  <section className="signals"><div className="section-heading"><div><Flame/><span><b>Legjobb kombinált jelzések</b><small>Confidence + Value + Data Quality rangsor</small></span></div><p>Nem garantált tippek</p></div><div className="signal-grid">{strongest.map((m,i)=>{const best=[...m.model.markets].sort((a,b)=>(b.valueScore??-99)-(a.valueScore??-99))[0];return <button onClick={()=>setSelected(m)} className="signal" key={m.id}><span className="rank">0{i+1}</span><div><b>{m.home.name} – {m.away.name}</b><small>{m.league.name} · {time(m.kickoff)}</small></div><span className="pick">{labels[best.market]}</span><strong>{edge(best.valueEdge)}</strong><Confidence value={m.model.confidence}/><ChevronRight/></button>})}</div></section>
+  <div className="list-heading"><div><h2>{filter==='Kedvencek'?'Kedvenc mérkőzések':'Mérkőzések'}</h2><span>{filtered.length} mérkőzés</span></div><small>{loading?'Adatok betöltése…':'Tippmix-adatot csak hiteles mező alapján jelölünk'}</small></div>
+  {loading?<div className="empty-state">A napi adatfolyam betöltése…</div>:filtered.length?<div className="match-grid">{filtered.map(m=><MatchCard key={m.id} match={m} favorite={favorites.includes(m.id)} onFavorite={()=>toggleFavorite(m.id)} onOpen={()=>setSelected(m)}/>)}</div>:<div className="empty-state">Nincs a feltételeknek megfelelő mérkőzés.</div>}
+  </div><nav className="mobile-nav">{nav.slice(0,5).map(([Icon,label],i)=><button className={i===0?'active':''} key={label}><Icon/><span>{label.split(' ')[0]}</span></button>)}</nav></section>{selected&&<Detail match={selected} onClose={()=>setSelected(null)}/>}</main>
 }
 

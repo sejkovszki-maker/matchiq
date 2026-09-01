@@ -1,5 +1,17 @@
 # MatchIQ changelog
 
+## v0.3.0 — Data Pipeline & Value Engine
+
+- Központi Match, Team, League, Statistics, Odds, ModelResult és Snapshot adatmodell.
+- Cserélhető fixture, statisztika és odds provider réteg, külön mock/live állapottal.
+- Normalizált 1X2 implied probability, Value Edge és súlyozott Value Score.
+- Confidence + Value + Data Quality alapú rangsorolás.
+- Modell vs Piac összehasonlító nézet és adatminőség-jelző.
+- Tartós, eszközön mentett kedvencek és meccs előtti prediction snapshotok.
+- Állapotkezelés: scheduled, live, finished, postponed és cancelled.
+- Backtesting segédfüggvények: Brier Score, Log Loss és bináris pontosság.
+- Az élő szolgáltatók konfiguráció nélkül nem állítanak elő kitalált adatot.
+
 ## v0.2.0 — Prediction Core
 
 ### Új funkciók
@@ -25,4 +37,3 @@
 - A csapat/xG/forma adatok továbbra is tesztadatok.
 - Élő Tippmix-, odds-, sérülés- és csapatstatisztikai API még nincs bekötve.
 - A Kedvencek jelenleg munkamenet-állapotban vannak, még nincs localStorage/perzisztencia.
-
