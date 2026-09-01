@@ -1,0 +1,1 @@
+import { maximumDrawdown } from './drawdown';export function bettingMetrics(profits:number[]){const stake=profits.length;const total=profits.reduce((a,b)=>a+b,0);return{roi:stake?total/stake:0,yield:stake?total/stake:0,maxDrawdown:maximumDrawdown(profits)}}

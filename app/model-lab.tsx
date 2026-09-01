@@ -1,0 +1,15 @@
+'use client';
+import { AlertTriangle,Beaker,CheckCircle2,Database,FlaskConical,LineChart,Scale,ShieldCheck } from 'lucide-react';
+import { defaultExperiments } from '@/config/experiments';
+import { parameterGrid } from '@/lib/optimization/parameter-search';
+
+export function ModelLab({onBack}:{onBack:()=>void}){
+ const experiments=defaultExperiments,combinations=parameterGrid().length;
+ return <div className="lab-page"><div className="lab-header"><div><p className="eyebrow">HISTORICAL DATABASE & MODEL LAB · V0.5</p><h1>Modell Labor</h1><p>Visszatesztelés, kalibráció és ellenőrzött modellkísérletek.</p></div><button onClick={onBack}>Vissza a meccsekhez</button></div>
+ <div className="lab-status"><AlertTriangle/><div><b>Nincs hiteles történelmi dataset betöltve</b><p>A labor készen áll, de teljesítményszámokat csak időbélyegzett, mérkőzés előtti adatokból számít és jelenít meg.</p></div><span>0 VALIDÁLT MECCS</span></div>
+ <div className="lab-kpis"><article><Database/><small>Historical matches</small><b>0</b><span>Hiteles rekord</span></article><article><ShieldCheck/><small>Production model</small><b>v0.5.0</b><span>Leakage guard aktív</span></article><article><FlaskConical/><small>Experiments</small><b>{experiments.length}</b><span>Piszkozat</span></article><article><Scale/><small>Parameter grid</small><b>{combinations}</b><span>Érvényes kombináció</span></article></div>
+ <div className="lab-grid"><section className="lab-panel wide"><div className="lab-title"><LineChart/><div><h2>Overall Performance</h2><p>Accuracy, Brier, Log Loss és piaci benchmark.</p></div></div><div className="no-data"><b>Nincs megjeleníthető eredmény</b><span>Minimum 200 leakage-ellenőrzött mérkőzés szükséges.</span></div></section>
+ <section className="lab-panel"><div className="lab-title"><Beaker/><div><h2>Calibration</h2><p>Előrejelzett kontra tényleges arány.</p></div></div><div className="calibration-empty">{['50–55%','55–60%','60–65%','65–70%','70–75%'].map(x=><p key={x}><span>{x}</span><i/><b>—</b></p>)}</div></section>
+ <section className="lab-panel"><div className="lab-title"><FlaskConical/><div><h2>Parameter Experiments</h2><p>Azonos mintán, Brier alapján összevetve.</p></div></div><div className="experiment-list">{experiments.map(e=><article key={e.id}><div><b>{e.name}</b><span>{e.modelVersion}</span></div><p>XG {e.parameters.xgWeight.toFixed(2)} · Elo {e.parameters.eloWeight.toFixed(2)} · Forma {e.parameters.formWeight.toFixed(2)}</p><em>{e.status==='draft'?'VÁRJA A DATASETET':e.status}</em></article>)}</div></section>
+ <section className="lab-panel wide"><div className="lab-title"><CheckCircle2/><div><h2>Beépített kutatási védelem</h2><p>A labor csak időrendben helyes kísérletet fogad el.</p></div></div><div className="guard-grid"><span>✓ predictionTimestamp &lt; kickoffTimestamp</span><span>✓ 60 / 20 / 20 idősoros felosztás</span><span>✓ Walk-forward validáció</span><span>✓ Minimum sample size</span><span>✓ Market Brier benchmark</span><span>✓ ROI mellett max drawdown</span></div></section></div></div>
+}

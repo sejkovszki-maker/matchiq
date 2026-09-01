@@ -1,5 +1,17 @@
 # MatchIQ changelog
 
+## v0.5.0 — Historical Database & Model Lab
+
+- Időbélyegzett történeti mérkőzés- és prediction snapshot séma D1 adatbázishoz.
+- Kötelező data-leakage ellenőrzés a kickoff előtti adatokra.
+- Liga-, szezon- és modellverzió-szűrhető backtest engine.
+- Accuracy, Brier Score, Log Loss, Calibration Error, ROI, Yield és max drawdown.
+- Bucket probability calibration és confidence calibration alap.
+- Időrendi 60/20/20 split és walk-forward validáció.
+- Parameter grid, experiment runner és modellverzió összehasonlítási alap.
+- Market benchmark, value-bet szimulátor és minimum sample size védelem.
+- Modell Labor felület őszinte, üres dataset állapottal; kitalált eredményeket nem közöl.
+
 ## v0.4.0 — Advanced Team Strength Engine
 
 - Külön támadó-, védő-, hazai és idegenbeli csapaterő.

@@ -1,0 +1,1 @@
+export function calibrateConfidence(raw:number,history:Array<{confidence:number;correct:boolean}>,minimumSample=50){const from=Math.floor(raw/10)*10;const rows=history.filter(h=>h.confidence>=from&&h.confidence<from+10);return rows.length>=minimumSample?Math.round(rows.filter(r=>r.correct).length/rows.length*100):raw}

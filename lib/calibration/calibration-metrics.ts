@@ -1,0 +1,1 @@
+import type { CalibrationBucket } from '@/types/model-metrics';export function expectedCalibrationError(buckets:CalibrationBucket[]){const total=buckets.reduce((s,b)=>s+b.sampleSize,0);return total?buckets.reduce((s,b)=>s+Math.abs(b.predicted-b.actual)*b.sampleSize,0)/total:0}
