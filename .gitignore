@@ -38,3 +38,4 @@ next-env.d.ts
 /work/
 /.site-stage/
 /matchiq-site.tar.gz
+/.incoming-v02/
