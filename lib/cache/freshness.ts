@@ -1,0 +1,3 @@
+import type { Freshness } from '@/types/health';
+const score=(timestamp:string,ttlMinutes:number)=>Math.max(0,Math.round(100-(Date.now()-new Date(timestamp).getTime())/(ttlMinutes*60_000)*35));
+export function freshness(input:{fixture:string;odds?:string;stats:string;squad?:string;lineup?:string}):Freshness{const values={fixture:score(input.fixture,30),odds:input.odds?score(input.odds,10):0,stats:score(input.stats,360),squad:input.squad?score(input.squad,30):0,lineup:input.lineup?score(input.lineup,15):0};return{...values,overall:Math.round(values.fixture*.25+values.odds*.3+values.stats*.25+values.squad*.12+values.lineup*.08)}}

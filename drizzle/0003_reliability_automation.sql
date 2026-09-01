@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS jobs (id TEXT PRIMARY KEY, type TEXT NOT NULL, match_id TEXT, priority INTEGER NOT NULL, idempotency_key TEXT NOT NULL UNIQUE, status TEXT NOT NULL, retry_count INTEGER NOT NULL DEFAULT 0, error TEXT, created_at TEXT NOT NULL, started_at TEXT, finished_at TEXT);
+CREATE INDEX IF NOT EXISTS idx_jobs_status_priority ON jobs(status, priority DESC, created_at);
+CREATE TABLE IF NOT EXISTS cache_entries (cache_key TEXT PRIMARY KEY, provider TEXT NOT NULL, version TEXT NOT NULL, payload_json TEXT NOT NULL, created_at TEXT NOT NULL, expires_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_cache_expires ON cache_entries(expires_at);
+CREATE TABLE IF NOT EXISTS audit_events (id TEXT PRIMARY KEY, timestamp TEXT NOT NULL, level TEXT NOT NULL, event TEXT NOT NULL, service TEXT NOT NULL, provider TEXT, match_id TEXT, old_value_json TEXT, new_value_json TEXT, cause TEXT);
+CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_events(timestamp);
+CREATE INDEX IF NOT EXISTS idx_audit_match ON audit_events(match_id, timestamp);
+CREATE TABLE IF NOT EXISTS system_alerts (id TEXT PRIMARY KEY, severity TEXT NOT NULL, status TEXT NOT NULL, service TEXT NOT NULL, message TEXT NOT NULL, created_at TEXT NOT NULL, acknowledged_at TEXT, resolved_at TEXT);
+CREATE INDEX IF NOT EXISTS idx_alerts_status_severity ON system_alerts(status, severity);
+CREATE TABLE IF NOT EXISTS match_locks (match_id TEXT PRIMARY KEY, owner_id TEXT NOT NULL, acquired_at TEXT NOT NULL, expires_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS daily_integrity_reports (report_date TEXT PRIMARY KEY, payload_json TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS model_deployments (id TEXT PRIMARY KEY, model_version TEXT NOT NULL, role TEXT NOT NULL, traffic_percent INTEGER NOT NULL DEFAULT 0, approved_at TEXT, created_at TEXT NOT NULL);
+PRAGMA optimize;

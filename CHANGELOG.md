@@ -83,3 +83,13 @@
 - Dinamikus napi dátum, adatfrissesség, provider health, prediction stability és részletes forrásidők.
 - Új D1 migráció az odds-idősorhoz, provider mappinghez, snapshotokhoz, eredményekhez és health állapothoz.
 - Az élő szolgáltatói kulcsok nincsenek a repóban; azok bekötéséig a kiadás BETA demo módban marad.
+# MatchIQ v0.8.0 – Production Reliability, Automation & Monitoring
+
+- Scheduler, prioritásos és idempotens job queue, retry/backoff motor.
+- TTL cache és stale-while-revalidate alap, freshness számítás.
+- Provider-, prediction- és value-integritás validálás.
+- Rate-limit manager, circuit breaker, health monitor és alert engine.
+- Audit események, biztonságos publikus hibaüzenetek és D1 naplózási séma.
+- Production 0.7.0 és 0.8.0 shadow candidate modellregiszter.
+- Új Rendszerállapot felület; ismeretlen telemetriából nem készít kitalált uptime-adatot.
+- D1 migráció jobokhoz, cache-hez, audit loghoz, alerthez, lockhoz és napi integrity reporthoz.

@@ -1,0 +1,2 @@
+export type ShadowComparison={matchId:string;productionVersion:string;candidateVersion:string;productionHome:number;candidateHome:number;difference:number};
+export const compareShadow=(matchId:string,productionHome:number,candidateHome:number):ShadowComparison=>({matchId,productionVersion:'0.7.0',candidateVersion:'0.8.0-shadow',productionHome,candidateHome,difference:candidateHome-productionHome});

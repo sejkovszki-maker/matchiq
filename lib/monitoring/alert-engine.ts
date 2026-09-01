@@ -1,0 +1,2 @@
+import type { ProviderHealth } from '@/types/health';import type { SystemAlert } from '@/types/alert';
+export function alertsForProviders(providers:ProviderHealth[]):SystemAlert[]{return providers.filter(p=>p.status==='DOWN'||p.status==='UNSTABLE').map(p=>({id:`provider-${p.provider}`,severity:p.status==='DOWN'?'CRITICAL':'WARNING',status:'OPEN',service:p.provider,message:p.status==='DOWN'?'A szolgáltató nem érhető el.':'A szolgáltató instabil.',createdAt:new Date().toISOString()}))}

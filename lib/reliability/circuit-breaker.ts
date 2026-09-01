@@ -1,0 +1,2 @@
+import { SCHEDULER_CONFIG } from '@/config/scheduler';import type { CircuitState } from '@/types/health';
+export class CircuitBreaker{state:CircuitState='CLOSED';failures=0;openedAt=0;canRequest(){if(this.state==='CLOSED')return true;if(Date.now()-this.openedAt>=SCHEDULER_CONFIG.circuitResetMs){this.state='HALF_OPEN';return true}return false}success(){this.failures=0;this.state='CLOSED'}failure(){this.failures++;if(this.failures>=SCHEDULER_CONFIG.circuitFailureThreshold){this.state='OPEN';this.openedAt=Date.now()}}}

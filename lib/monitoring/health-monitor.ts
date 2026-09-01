@@ -1,0 +1,3 @@
+import type { ProviderHealth,ServiceStatus } from '@/types/health';
+export const providerStatus=(successRate:number,consecutiveFailures:number,lastSuccessMinutes:number):ServiceStatus=>consecutiveFailures>=5||lastSuccessMinutes>60?'DOWN':successRate<.8?'UNSTABLE':successRate<.95||lastSuccessMinutes>20?'DEGRADED':'HEALTHY';
+export const reliabilityScore=(providers:ProviderHealth[],jobSuccessRate?:number,freshness?:number)=>{if(!providers.length||jobSuccessRate===undefined||freshness===undefined)return undefined;const availability=providers.reduce((s,p)=>s+(p.successRate??0),0)/providers.length;return Math.round((availability*.45+jobSuccessRate*.35+freshness/100*.2)*10000)/100};
