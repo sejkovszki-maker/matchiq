@@ -8,9 +8,10 @@ export function calculateDataQuality(stat:Statistics,odds?:Odds){let score=35;sc
 export function analyzeMatch(match:Match,statistics:Statistics,odds?:Odds):MatchAnalysis{
  const dataQuality=calculateDataQuality(statistics,odds);const engine=runAdvancedEngine(match,statistics,odds,dataQuality);const p=engine.poisson;
  const probabilities:Record<MarketKey,number>={home:p.homeWin,draw:p.draw,away:p.awayWin,over15:p.over15,over25:p.over25,over35:p.over35,bttsYes:p.bttsYes};
- const markets=(Object.keys(probabilities) as MarketKey[]).map(market=>{const quote=quoteFor(odds,market);return{market,modelProbability:probabilities[market],marketProbability:quote?.probability,odds:quote?.odds,...calculateValue(probabilities[market],quote?.probability,engine.confidence,dataQuality)}});
+ const markets=(Object.keys(probabilities) as MarketKey[]).map(market=>{const quote=quoteFor(odds,market);return{market,modelProbability:probabilities[market],marketProbability:quote?.probability,odds:quote?.odds,...calculateValue(probabilities[market],quote?.probability,engine.confidence,dataQuality,quote?.odds)}});
+ const best=markets.filter(m=>m.signal==='STRONG'||m.signal==='GOOD').sort((a,b)=>(b.valueScore??-99)-(a.valueScore??-99))[0];
+ const predictionStability=Math.max(0,Math.min(100,Math.round(engine.confidence*.55+dataQuality*.35+(odds?8:0))));
  const warnings:string[]=[];if(!odds)warnings.push('Ehhez a mérkőzéshez nincs oddsadat.');if(!statistics.hasSquadInfo)warnings.push('Keretinformáció nem érhető el.');if(!match.isTippmix)warnings.push('Nincs hiteles Tippmix-jelölés.');
- return{...match,statistics,odds,model:{version:MODEL_CONFIG.modelVersion,calculatedAt:new Date().toISOString(),predictedScore:p.predictedScore,confidence:engine.confidence,dataQuality,markets,matrix:p.matrix,advanced:engine.advanced},dataWarnings:warnings};
+ return{...match,statistics,odds,model:{version:MODEL_CONFIG.modelVersion,calculatedAt:new Date().toISOString(),predictedScore:p.predictedScore,confidence:engine.confidence,dataQuality,markets,matrix:p.matrix,predictionStability,bestSignal:best?{market:best.market,classification:best.signal!,edge:best.valueEdge!,expectedValue:best.expectedValue!,score:best.valueScore!}:undefined,advanced:engine.advanced},dataWarnings:warnings};
 }
 export function analysisRank(match:MatchAnalysis){return rankScore(match.model.markets,match.model.confidence,match.model.dataQuality)}
-

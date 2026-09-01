@@ -23,14 +23,20 @@ export type Odds = {
 
 export type MarketResult = {
   market: MarketKey; modelProbability: number; marketProbability?: number; odds?: number;
-  valueEdge?: number; valueScore?: number;
+  valueEdge?: number; expectedValue?: number; valueScore?: number; signal?: SignalClass;
 };
+
+export type SignalClass = 'STRONG' | 'GOOD' | 'WATCH' | 'NO_VALUE' | 'AVOID';
+export type AppMode = 'live' | 'demo' | 'offline';
+export type OddsPoint = { timestamp: string; odds: number; kind: 'opening' | 'current' | 'closing' };
+export type BestSignal = { market: MarketKey; classification: SignalClass; edge: number; expectedValue: number; score: number };
 
 import type { AdvancedModelOutput } from './model-output';
 
 export type ModelResult = {
   version: string; calculatedAt: string; predictedScore: [number, number]; confidence: number;
-  dataQuality: number; markets: MarketResult[]; matrix: Array<{home:number;away:number;probability:number}>; advanced?: AdvancedModelOutput;
+  dataQuality: number; markets: MarketResult[]; matrix: Array<{home:number;away:number;probability:number}>;
+  bestSignal?: BestSignal; predictionStability: number; advanced?: AdvancedModelOutput;
 };
 
 export type MatchAnalysis = Match & { statistics: Statistics; odds?: Odds; model: ModelResult; dataWarnings: string[] };

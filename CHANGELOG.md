@@ -74,3 +74,12 @@
 - A csapat/xG/forma adatok továbbra is tesztadatok.
 - Élő Tippmix-, odds-, sérülés- és csapatstatisztikai API még nincs bekötve.
 - A Kedvencek jelenleg munkamenet-állapotban vannak, még nincs localStorage/perzisztencia.
+# MatchIQ v0.7.0 – Live Production & Tippmix Integration (BETA)
+
+- Elkészült a `live / demo / offline` adatút és az őszintén jelölt demo fallback.
+- Bevezetve a Tippmix provider-szerződés, az entitásleképezés és a 75% alatti manuális felülvizsgálat.
+- A value engine már Edge, EV, Confidence, Data Quality, likviditás és stabilitás alapján osztályoz.
+- A legjobb jelzés csak a minimumfeltételeket teljesítő piacok közül kerül ki; ellenkező esetben „Nincs value”.
+- Dinamikus napi dátum, adatfrissesség, provider health, prediction stability és részletes forrásidők.
+- Új D1 migráció az odds-idősorhoz, provider mappinghez, snapshotokhoz, eredményekhez és health állapothoz.
+- Az élő szolgáltatói kulcsok nincsenek a repóban; azok bekötéséig a kiadás BETA demo módban marad.
