@@ -1,0 +1,1 @@
+import type { Player,PlayerImpact } from './player';import type { SquadReport } from './injury';export type SquadState={teamId:string;players:Player[];impacts:PlayerImpact[];reports:SquadReport[];availability:number;missingImpact:number;squadStrength:number;stability:number;source:string;updatedAt:string};

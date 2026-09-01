@@ -1,5 +1,18 @@
 # MatchIQ changelog
 
+## v0.6.0 — Squad Intelligence & Match Context Engine
+
+- Player Impact és Replacement Quality számítás.
+- Forrásbizonyossággal súlyozott availability és squad strength.
+- Várható kezdő, lineup confidence és formation stability.
+- Rest advantage, congestion, rotation risk, travel és manager context.
+- Korlátozott squad, rest, rotation és context xG-korrekció.
+- Kibővített confidence lineup-, squad- és context-stability komponensekkel.
+- Csapathelyzet, xG adjustment flow és confidence breakdown a meccsoldalon.
+- Prediction Change Log és Important Update adatmodell.
+- D1 migráció a kontextusfrissítésekhez és előrejelzés-változásokhoz.
+- Élő keretforrás hiányában minden ilyen adat demonstrációsként jelenik meg.
+
 ## v0.5.0 — Historical Database & Model Lab
 
 - Időbélyegzett történeti mérkőzés- és prediction snapshot séma D1 adatbázishoz.

@@ -1,0 +1,1 @@
+import type { AvailabilityStatus,SourceCertainty } from './player';export type SquadReport={playerId:string;status:AvailabilityStatus;reason:string;certainty:SourceCertainty;source:string;updatedAt:string};

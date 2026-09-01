@@ -1,0 +1,1 @@
+export type PredictionChange={matchId:string;previousProbability:number;newProbability:number;change:number;reason:'squad_update'|'lineup_update'|'odds_update'|'context_update';source:string;updatedAt:string;important:boolean};

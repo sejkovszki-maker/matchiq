@@ -1,0 +1,1 @@
+export function rotationRisk(daysSince:number,daysUntil:number,congestion:number,importance:number){return Math.round(Math.max(0,Math.min(100,(daysSince<4?25:0)+(daysUntil<4?20:0)+congestion*.45+importance*.1)))}

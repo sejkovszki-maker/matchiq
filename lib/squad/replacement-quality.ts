@@ -1,0 +1,1 @@
+import type { Player } from '@/types/player';export function replacementQuality(player:Player,squad:Player[]){const candidates=squad.filter(p=>p.position===player.position&&p.id!==player.id).sort((a,b)=>b.minutes-a.minutes);const replacement=candidates[0];return replacement?Math.max(20,Math.min(100,Math.round(replacement.minutes/Math.max(player.minutes,1)*100))):20}

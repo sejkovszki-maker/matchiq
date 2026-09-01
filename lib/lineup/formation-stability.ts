@@ -1,0 +1,1 @@
+export function formationStability(formations:string[]){if(!formations.length)return 0;const counts=new Map<string,number>();formations.forEach(f=>counts.set(f,(counts.get(f)??0)+1));return Math.round(Math.max(...counts.values())/formations.length*100)}

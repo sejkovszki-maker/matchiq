@@ -1,0 +1,1 @@
+export function importanceScore(context:{derby?:boolean;knockout?:boolean;qualification?:boolean;deadRubber?:boolean}){return Math.max(10,Math.min(100,50+(context.derby?15:0)+(context.knockout?25:0)+(context.qualification?15:0)-(context.deadRubber?30:0)))}

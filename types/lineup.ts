@@ -1,0 +1,1 @@
+import type { AvailabilityStatus,Position } from './player';export type LineupPlayer={playerId:string;name:string;position:Position;status:AvailabilityStatus;probability:number};export type ExpectedLineup={teamId:string;formation:string;players:LineupPlayer[];confidence:number;formationStability:number;source:string;updatedAt:string};

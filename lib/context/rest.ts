@@ -1,0 +1,1 @@
+export function restAdjustment(homeDays:number,awayDays:number,max=.1){const delta=Math.max(-4,Math.min(4,homeDays-awayDays));return[Math.max(-max,Math.min(max,delta*.015)),Math.max(-max,Math.min(max,-delta*.015))] as [number,number]}
