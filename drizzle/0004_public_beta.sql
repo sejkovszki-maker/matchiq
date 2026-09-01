@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS user_preferences (user_id TEXT PRIMARY KEY, timezone TEXT NOT NULL DEFAULT 'Europe/Budapest', odds_format TEXT NOT NULL DEFAULT 'decimal', experience_mode TEXT NOT NULL DEFAULT 'simple', card_view TEXT NOT NULL DEFAULT 'detailed', preferences_json TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS user_favorites (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, entity_type TEXT NOT NULL, entity_id TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_user_favorite_entity ON user_favorites(user_id, entity_type, entity_id);
+CREATE TABLE IF NOT EXISTS user_watchlist (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, match_id TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, removed_at TEXT);
+CREATE INDEX IF NOT EXISTS idx_watchlist_user_active ON user_watchlist(user_id, active);
+CREATE TABLE IF NOT EXISTS user_notifications (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, type TEXT NOT NULL, match_id TEXT, title TEXT NOT NULL, message TEXT NOT NULL, created_at TEXT NOT NULL, read_at TEXT);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON user_notifications(user_id, read_at, created_at DESC);
+CREATE TABLE IF NOT EXISTS beta_feedback (id TEXT PRIMARY KEY, match_id TEXT, user_id TEXT, helpful INTEGER NOT NULL, category TEXT, message TEXT, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS data_corrections (id TEXT PRIMARY KEY, entity_type TEXT NOT NULL, provider TEXT NOT NULL, external_id TEXT NOT NULL, old_value TEXT, new_value TEXT NOT NULL, corrected_by TEXT NOT NULL, audit_event_id TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS performance_summaries (id TEXT PRIMARY KEY, period TEXT NOT NULL, league_id TEXT, market TEXT, sample_size INTEGER NOT NULL, metrics_json TEXT NOT NULL, generated_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_performance_scope ON performance_summaries(period, league_id, market);
+PRAGMA optimize;

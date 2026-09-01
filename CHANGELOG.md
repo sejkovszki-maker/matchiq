@@ -93,3 +93,13 @@
 - Production 0.7.0 és 0.8.0 shadow candidate modellregiszter.
 - Új Rendszerállapot felület; ismeretlen telemetriából nem készít kitalált uptime-adatot.
 - D1 migráció jobokhoz, cache-hez, audit loghoz, alerthez, lockhoz és napi integrity reporthoz.
+# MatchIQ v0.9.0 – Public Beta, Performance Dashboard & User Experience
+
+- Új, mintaalapú teljesítménydashboard 7/30/90 napos, szezon és összes időszakkal.
+- Prediction History és kalibrációs nézet hiteles FINAL_PREMATCH adatokra előkészítve.
+- Egyszerű/Haladó és Kompakt/Részletes felhasználói nézetek.
+- Automatikus Prediction Grade és külön Value Grade.
+- Kedvencek blokk, felhasználói preferenciák és in-app értesítési alap.
+- Közérthető AI Modell és felhasználóbarát modellváltozások oldal.
+- D1 séma felhasználói profilhoz, kedvencekhez, watchlisthez, értesítésekhez, feedbackhez és teljesítmény-összesítésekhez.
+- Valódi történelmi minta hiányában az oldal nem közöl kitalált accuracy-, ROI- vagy kalibrációs értéket.

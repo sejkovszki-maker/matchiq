@@ -1,0 +1,2 @@
+export type ExperienceMode='simple'|'advanced';export type CardView='compact'|'detailed';
+export type UserPreferences={preferredLeagueIds:string[];favoriteTeamIds:string[];favoriteMatchIds:string[];watchlistMatchIds:string[];timezone:string;oddsFormat:'decimal';experienceMode:ExperienceMode;cardView:CardView;defaultFilter:string;notifications:{favoritesOnly:boolean;minimumGrade:'A+'|'A'|'B'|'C'|'D';minimumValueScore:number;tippmixOnly:boolean}};
