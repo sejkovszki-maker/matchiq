@@ -26,9 +26,11 @@ export type MarketResult = {
   valueEdge?: number; valueScore?: number;
 };
 
+import type { AdvancedModelOutput } from './model-output';
+
 export type ModelResult = {
   version: string; calculatedAt: string; predictedScore: [number, number]; confidence: number;
-  dataQuality: number; markets: MarketResult[]; matrix: Array<{home:number;away:number;probability:number}>;
+  dataQuality: number; markets: MarketResult[]; matrix: Array<{home:number;away:number;probability:number}>; advanced?: AdvancedModelOutput;
 };
 
 export type MatchAnalysis = Match & { statistics: Statistics; odds?: Odds; model: ModelResult; dataWarnings: string[] };

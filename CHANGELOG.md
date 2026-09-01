@@ -1,5 +1,17 @@
 # MatchIQ changelog
 
+## v0.4.0 — Advanced Team Strength Engine
+
+- Külön támadó-, védő-, hazai és idegenbeli csapaterő.
+- Liga-specifikus gólátlag, hazai előny, K-faktor és kiszámíthatósági profil.
+- Dinamikus Elo-frissítési algoritmus ellenfélerő- és gólkülönbség-korrekcióval.
+- Recency-súlyozott forma xG, xGA, eredmény, környezet és ellenfél Elo alapján.
+- Többrétegű expected goals motor és Poisson-eredménymátrix.
+- Poisson, Team Strength, Elo/Forma és piac konszenzus.
+- Súlyozott confidence: adatminőség, konszenzus, formastabilitás, Elo, odds és liga.
+- Prediction Breakdown, csapaterő-, Elo- és konszenzusnézet.
+- Központi Model Config és 0.4.0 snapshot-verzióazonosító.
+
 ## v0.3.0 — Data Pipeline & Value Engine
 
 - Központi Match, Team, League, Statistics, Odds, ModelResult és Snapshot adatmodell.

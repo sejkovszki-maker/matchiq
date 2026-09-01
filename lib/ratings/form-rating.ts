@@ -1,0 +1,6 @@
+import { MODEL_CONFIG } from '@/config/prediction-model';
+import type { FormMatch,FormRating } from '@/types/team-rating';
+const resultScore={W:1,D:.5,L:0};
+function score(match:FormMatch){const opponent=Math.max(.75,Math.min(1.25,match.opponentElo/1500));const result=resultScore[match.result];const goal=Math.max(-.25,Math.min(.25,(match.goalsFor-match.goalsAgainst)*.08));const xg=Math.max(-.2,Math.min(.2,(match.xg-match.xga)*.1));return Math.max(0,Math.min(1.4,(result+goal+xg)*opponent))}
+function weighted(matches:FormMatch[]){const rows=matches.slice(0,5);const weights=MODEL_CONFIG.formWeights.slice(0,rows.length);const total=weights.reduce((a,b)=>a+b,0);return rows.reduce((s,m,i)=>s+score(m)*weights[i],0)/Math.max(total,.01)}
+export function calculateForm(teamId:string,matches:FormMatch[]):FormRating{const overall=weighted(matches);const home=weighted(matches.filter(m=>m.venue==='home'))||overall;const away=weighted(matches.filter(m=>m.venue==='away'))||overall;const values=matches.slice(0,5).map(score);const mean=values.reduce((a,b)=>a+b,0)/Math.max(values.length,1);const variance=values.reduce((s,v)=>s+(v-mean)**2,0)/Math.max(values.length,1);return{teamId,overall,home,away,stability:Math.max(0,Math.min(1,1-Math.sqrt(variance))),matches}}
