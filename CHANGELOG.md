@@ -103,3 +103,13 @@
 - Közérthető AI Modell és felhasználóbarát modellváltozások oldal.
 - D1 séma felhasználói profilhoz, kedvencekhez, watchlisthez, értesítésekhez, feedbackhez és teljesítmény-összesítésekhez.
 - Valódi történelmi minta hiányában az oldal nem közöl kitalált accuracy-, ROI- vagy kalibrációs értéket.
+# MatchIQ v1.0.0-rc.1 – Production Release Candidate
+
+- Bevezetve a bizonyíték-alapú Release Gate; a végleges 1.0.0 címke blokkolt, amíg minden kapu nem PASS.
+- Egységes provider contract, canonical match ID és végleges Tippmix mapping státuszok.
+- Raw és kalibrált probability/confidence szétválasztása; a fő UI kalibrált értéket mutat.
+- No Prediction Policy és csökkentett modellhez tartozó felhasználói figyelmeztetések.
+- Model governance rekordok, immutable FINAL_PREMATCH snapshot séma és korrekciós napló.
+- Incident-, release-check- és kiterjesztett eredménymodell alapok.
+- Magyar lokalizációs katalógus és production navigáció.
+- A kiadás szándékosan RC: élő provider-, uptime-, security audit- és restore-test bizonyíték nélkül nem állítja magáról, hogy production-ready.

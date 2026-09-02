@@ -6,7 +6,7 @@ export type League = { id: string; name: string; country: string; tier?: number 
 export type MatchResult = { homeGoals: number; awayGoals: number; finishedAt: string };
 
 export type Match = {
-  id: string; kickoff: string; status: MatchStatus; home: Team; away: Team; league: League;
+  id: string; canonicalId?: string; kickoff: string; status: MatchStatus; home: Team; away: Team; league: League;
   isTippmix: boolean; tippmixEventId?: string; source: string; result?: MatchResult;
 };
 
@@ -22,7 +22,7 @@ export type Odds = {
 };
 
 export type MarketResult = {
-  market: MarketKey; modelProbability: number; marketProbability?: number; odds?: number;
+  market: MarketKey; modelProbability: number; rawModelProbability?: number; marketProbability?: number; odds?: number;
   valueEdge?: number; expectedValue?: number; valueScore?: number; signal?: SignalClass;
 };
 
@@ -36,7 +36,8 @@ import type { AdvancedModelOutput } from './model-output';
 export type ModelResult = {
   version: string; calculatedAt: string; predictedScore: [number, number]; confidence: number;
   dataQuality: number; markets: MarketResult[]; matrix: Array<{home:number;away:number;probability:number}>;
-  bestSignal?: BestSignal; predictionStability: number; advanced?: AdvancedModelOutput;
+  bestSignal?: BestSignal; predictionStability: number; rawConfidence?: number; calibrationVersion?: string;
+  publishable?: boolean; noPredictionReasons?: string[]; advanced?: AdvancedModelOutput;
 };
 
 export type MatchAnalysis = Match & { statistics: Statistics; odds?: Odds; model: ModelResult; dataWarnings: string[] };

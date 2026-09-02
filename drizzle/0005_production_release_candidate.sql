@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS canonical_matches (canonical_id TEXT PRIMARY KEY, league_id TEXT NOT NULL, kickoff_utc TEXT NOT NULL, home_team_id TEXT NOT NULL, away_team_id TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_canonical_fixture ON canonical_matches(league_id, kickoff_utc, home_team_id, away_team_id);
+CREATE TABLE IF NOT EXISTS provider_records (id TEXT PRIMARY KEY, canonical_match_id TEXT, category TEXT NOT NULL, provider TEXT NOT NULL, provider_version TEXT NOT NULL, source_id TEXT NOT NULL, fetched_at TEXT NOT NULL, source_updated_at TEXT NOT NULL, confidence INTEGER NOT NULL, raw_status TEXT NOT NULL, normalized_json TEXT NOT NULL, FOREIGN KEY(canonical_match_id) REFERENCES canonical_matches(canonical_id));
+CREATE UNIQUE INDEX IF NOT EXISTS idx_provider_record_source ON provider_records(provider, category, source_id, source_updated_at);
+CREATE TABLE IF NOT EXISTS model_governance (id TEXT PRIMARY KEY, model_id TEXT NOT NULL, model_version TEXT NOT NULL UNIQUE, status TEXT NOT NULL, created_at TEXT NOT NULL, approved_at TEXT, training_period TEXT, validation_period TEXT, test_period TEXT, calibration_version TEXT NOT NULL, feature_set TEXT NOT NULL, parameter_set TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS immutable_final_snapshots (id TEXT PRIMARY KEY, canonical_match_id TEXT NOT NULL, model_version TEXT NOT NULL, payload_json TEXT NOT NULL, content_hash TEXT NOT NULL, created_at TEXT NOT NULL, FOREIGN KEY(canonical_match_id) REFERENCES canonical_matches(canonical_id));
+CREATE UNIQUE INDEX IF NOT EXISTS idx_final_snapshot_once ON immutable_final_snapshots(canonical_match_id, model_version);
+CREATE TABLE IF NOT EXISTS snapshot_corrections (id TEXT PRIMARY KEY, snapshot_id TEXT NOT NULL, correction_json TEXT NOT NULL, reason TEXT NOT NULL, audit_event_id TEXT NOT NULL, created_at TEXT NOT NULL, FOREIGN KEY(snapshot_id) REFERENCES immutable_final_snapshots(id));
+CREATE TABLE IF NOT EXISTS incidents (id TEXT PRIMARY KEY, severity TEXT NOT NULL, start_time TEXT NOT NULL, end_time TEXT, affected_services_json TEXT NOT NULL, affected_matches INTEGER NOT NULL DEFAULT 0, root_cause TEXT, resolution TEXT, status TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_incidents_status_start ON incidents(status, start_time DESC);
+CREATE TABLE IF NOT EXISTS release_gate_checks (id TEXT PRIMARY KEY, release_version TEXT NOT NULL, gate_key TEXT NOT NULL, status TEXT NOT NULL, measured_value TEXT, evidence TEXT, checked_at TEXT NOT NULL, checked_by TEXT NOT NULL);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_release_gate_version_key ON release_gate_checks(release_version, gate_key);
+PRAGMA optimize;

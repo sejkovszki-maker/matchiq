@@ -1,0 +1,1 @@
+export type Score={home:number;away:number};export type ExtendedMatchResult={matchId:string;score90:Score;scoreExtraTime?:Score;penaltyScore?:Score;qualificationResult?:'home'|'away';evaluationStatus:'EVALUATED'|'VOID'|'PENDING';voidReason?:'postponed'|'cancelled'|'abandoned'};

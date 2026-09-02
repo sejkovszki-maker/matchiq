@@ -1,0 +1,1 @@
+export type ModelGovernance={modelId:string;modelVersion:string;status:'EXPERIMENT'|'SHADOW'|'RELEASE_CANDIDATE'|'PRODUCTION'|'RETIRED';createdAt:string;approvedAt?:string;trainingPeriod?:string;validationPeriod?:string;testPeriod?:string;calibrationVersion:string;featureSet:string;parameterSet:string};

@@ -1,0 +1,7 @@
+{
+  "app.name": "MatchIQ",
+  "status.noPrediction": "Nincs megbízható előrejelzés",
+  "status.noValue": "Nincs value",
+  "status.insufficientData": "Nincs elegendő adat",
+  "disclaimer": "A történelmi eredmény nem garantál jövőbeli teljesítményt."
+}
