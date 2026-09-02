@@ -113,3 +113,11 @@
 - Incident-, release-check- és kiterjesztett eredménymodell alapok.
 - Magyar lokalizációs katalógus és production navigáció.
 - A kiadás szándékosan RC: élő provider-, uptime-, security audit- és restore-test bizonyíték nélkül nem állítja magáról, hogy production-ready.
+# 1.0.0-rc.2 – Ingyenes élő adatforrások
+
+- A beépített napi eseményeket valódi, dátum szerinti adatbetöltés váltja fel.
+- Kulcs nélkül működik a TheSportsDB és az OpenLigaDB, automatikus összefésüléssel és duplikációszűréssel.
+- Előkészített, szerveroldali csatlakozás: football-data.org, API-Football és Sportmonks ingyenes csomagjaihoz.
+- A szolgáltatói kulcsok nem kerülnek a böngészőbe vagy a GitHub-tárolóba.
+- Nincs kitalált Tippmix-jelölés, odds vagy demonstrációs fallback az élő napi listában.
+- Forrásonként látható állapot és őszinte adathiány-jelzés került a felületre.
